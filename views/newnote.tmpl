@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+    <title>New Note</title>
 </head>
 <body>
-    <h2>Profile</h2>
+    <h2>Note</h2>
     <!-- Flash messages -->
     {{ with .Flash }}
       {{ range . }}
@@ -14,15 +14,15 @@
       {{ end }}
     {{ end }}
 
-    <form action="/web/user" method="POST" enctype="application/x-www-form-urlencoded">
-        <!-- Your form fields here -->
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" value="{{.Name}}" required><br>
+    <form action="/note/create" method="POST" enctype="application/x-www-form-urlencoded">
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" value="{{.Email}}" required><br>
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br>
 
-        <button type="submit">Update Profile</button>
+        <label for="text">Text:</label>
+        <input type="text" id="text" name="text" required><br>
+
+        <button type="submit">Create Note</button>
     </form>
 </body>
 </html>

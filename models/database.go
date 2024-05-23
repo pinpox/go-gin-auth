@@ -3,9 +3,10 @@ package models
 import (
 	"log"
 
-	"gorm.io/gorm"
-	"gorm.io/driver/sqlite" // Sqlite driver based on CGO
+
 	"github.com/joho/godotenv"
+	"gorm.io/driver/sqlite" // Sqlite driver based on CGO
+	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
@@ -27,4 +28,9 @@ func ConnectDataBase() {
 
 	// AutoMigrate creates or updates database tables based on model definitions
 	DB.AutoMigrate(&User{})
+	DB.AutoMigrate(&Note{})
+}
+
+func SeedData(input any) {
+	DB.Save(&input)
 }

@@ -7,6 +7,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type User struct {
@@ -64,6 +65,22 @@ func LoginCheck(username, password string) error {
 	}
 
 	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+}
+
+// SaveAdmin creates a new user in the database
+func (u *User) SaveAdmin() (*User, error) {
+
+	var err error
+	err = DB.Clauses(
+		clause.OnConflict{
+			Columns:   []clause.Column{{Name: "username"}},
+			UpdateAll: true,
+		}).Create(&u).Error
+
+	if err != nil {
+		return &User{}, err
+	}
+	return u, nil
 }
 
 // SaveUser creates a new user in the database

@@ -1,25 +1,70 @@
 package controllers
 
 import (
-	// "go-gin-auth/models"
-	// "go-gin-auth/utils"
-	// "github.com/gin-contrib/sessions"
+	"go-gin-auth/models"
+	"go-gin-auth/utils"
+	"log"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	// "net/http"
+	"net/http"
 	// "strings"
 )
 
 func NoteList(c *gin.Context)   {}
 func NoteShow(c *gin.Context)   {}
-func NoteCreate(c *gin.Context) {}
 func NoteUpdate(c *gin.Context) {}
 func NoteDelete(c *gin.Context) {}
 
-// ProfileInput represents the input for the profile update endpoint
-// type ProfileInput struct {
-// 	Name  string `form:"name" binding:"required"`
-// 	Email string `form:"email" binding:"required"`
-// }
+func NoteCreateShow(c *gin.Context) {
+	log.Println("Rendireng note page")
+	utils.RenderTemplate(c, "newnote.tmpl", gin.H{})
+}
+
+// NoteInput represents the input for the note create/update endpoints
+type NoteInput struct {
+	Title string `form:"title" binding:"required"`
+	Text  string `form:"text" binding:"required"`
+}
+
+func NoteCreate(c *gin.Context) {
+
+	var input NoteInput
+
+	// Bind and validate input
+	if err := c.ShouldBind(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+
+	session := sessions.Default(c)
+	username := session.Get("user").(string)
+
+	user, err := models.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		return
+	}
+
+
+	// Create a new note
+	note := models.Note{
+		Title: input.Title,
+		Text:  input.Text,
+		User: user,
+	}
+
+	// Save the user to the database
+	_, err = note.SaveNote()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+
+}
+
 //
 // // Profile displays the user's profile
 // func ProfileIndex(c *gin.Context) {
