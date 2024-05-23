@@ -2,6 +2,7 @@
 package utils
 
 import (
+	"log"
 	"fmt"
 	"os"
 	"strconv"
@@ -82,6 +83,7 @@ func TokenCookie(c *gin.Context) {
 	tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 
 	// Set the token in the cookie
+	log.Println("Set cookie", tokenString)
 	c.SetCookie("token", tokenString, 0, "/", "localhost", false, true)
 }
 

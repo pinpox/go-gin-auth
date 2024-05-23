@@ -65,6 +65,8 @@ type LoginInput struct {
 func Login(c *gin.Context) {
 	var input LoginInput
 
+	log.Println("Im in login")
+
 	// Bind and validate input
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -127,6 +129,7 @@ func LoginWithSession(c *gin.Context) {
 	// Set a session variable
 	session := sessions.Default(c)
 	session.Set("token", token)
+	session.Set("user", username)
 	session.Save()
 
 	redirectURL := "/dashboard/profile"

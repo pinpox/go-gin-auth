@@ -20,8 +20,8 @@ func main() {
 	r.LoadHTMLGlob("views/*")
 
 	// Set up session middleware
-	store := cookie.NewStore([]byte("secret"))
-	r.Use(sessions.Sessions("mysession", store))
+	store := cookie.NewStore([]byte("secret")) // TODO
+	r.Use(sessions.Sessions("mysession", store)) //TODO
 
 	// Set up FlashMessageMiddleware
 	r.Use(middlewares.FlashMessageMiddleware())
@@ -52,6 +52,7 @@ func main() {
 		web.POST("/user", controllers.UpdateProfile)
 	}
 
+	// Login and register pages
 	r.GET("/login", controllers.LoginIndex)
 	r.GET("/register", controllers.RegisterIndex)
 
