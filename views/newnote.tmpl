@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+</head>
+<body>
+    <h2>Profile</h2>
+    <!-- Flash messages -->
+    {{ with .Flash }}
+      {{ range . }}
+        <div class="flash-message">{{ . }}</div>
+      {{ end }}
+    {{ end }}
+
+    <form action="/web/user" method="POST" enctype="application/x-www-form-urlencoded">
+        <!-- Your form fields here -->
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{.Name}}" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{.Email}}" required><br>
+
+        <button type="submit">Update Profile</button>
+    </form>
+</body>
+</html>

@@ -5,9 +5,8 @@ import (
 	"html"
 	"strings"
 
-	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
-	"ginjwtauth/utils"
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -52,13 +51,8 @@ func GetUserByUsername(username string) (User, error) {
 	return user, nil
 }
 
-// VerifyPassword compares the provided password with the hashed password
-func VerifyPassword(password, hashedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-}
-
 // LoginCheck validates user credentials and generates a token
-func LoginCheck(username, password string) (string, error) {
+func LoginCheck(username, password string) error {
 	var err error
 
 	u := User{}
@@ -66,28 +60,16 @@ func LoginCheck(username, password string) (string, error) {
 	err = DB.Model(User{}).Where("username = ?", username).Take(&u).Error
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	err = VerifyPassword(password, u.Password)
-
-	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return "", err
-	}
-
-	token, err := utils.GenerateToken(u.ID)
-
-	if err != nil {
-		return "", err
-	}
-
-	return token, nil
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }
 
 // SaveUser creates a new user in the database
 func (u *User) SaveUser() (*User, error) {
 	var err error
-	err = DB.Create(&u).Error
+	err = DB.Model(&u).Create(&u).Error
 	if err != nil {
 		return &User{}, err
 	}
@@ -95,7 +77,8 @@ func (u *User) SaveUser() (*User, error) {
 }
 
 // BeforeSave is a callback function called before saving a user
-func (u *User) BeforeSave() error {
+func (u *User) BeforeSave(db *gorm.DB) error {
+
 	// Turn password into hash
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {

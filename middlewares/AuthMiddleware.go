@@ -10,13 +10,14 @@ import (
 
 // AuthMiddleware is a middleware to check session for authentication
 func AuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session := sessions.Default(c)
 
-		log.Println(c.Get("userID"))
+	return func(c *gin.Context) {
+
+		session := sessions.Default(c)
 
 		// Check if the "user" key is present in the session
 		user := session.Get("user")
+		log.Println(user)
 		if user == nil {
 			log.Println("No user found in AuthMiddleware, redirecting to login")
 			// Redirect to the login page if not authenticated

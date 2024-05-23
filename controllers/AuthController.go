@@ -2,12 +2,11 @@
 package controllers
 
 import (
-	"log"
-	"github.com/gin-gonic/gin"
-	"ginjwtauth/models"
-	"ginjwtauth/utils"
-	"net/http"
+	"go-gin-auth/models"
+	"go-gin-auth/utils"
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // RegisterIndex displays the registration form
@@ -30,11 +29,7 @@ func Register(c *gin.Context) {
 
 	// Bind and validate input
 	if err := c.ShouldBind(&input); err != nil {
-
-		log.Println("NOT Parsing")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-
-
 		return
 	}
 
@@ -61,31 +56,6 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// Login handles user login
-func Login(c *gin.Context) {
-	var input LoginInput
-
-	log.Println("Im in login")
-
-	// Bind and validate input
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Validate user credentials and generate a token
-	token, err := models.LoginCheck(input.Username, input.Password)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	// Set the token in a cookie
-	utils.TokenCookie(c)
-
-	c.JSON(http.StatusOK, gin.H{"token": token})
-}
-
 // Profile handles user profile
 func Profile(c *gin.Context) {
 	userID := c.MustGet("userID").(uint)
@@ -106,19 +76,37 @@ func Profile(c *gin.Context) {
 }
 
 // Login Index Page
-func LoginIndex (c *gin.Context) {
+func LoginIndex(c *gin.Context) {
 	utils.RenderTemplate(c, "login.tmpl", gin.H{
 		"title": "Login",
 	})
 }
 
-// LoginWithSession handles user login and sets a session
-func LoginWithSession(c *gin.Context) {
+// Logout handles user login and sets a session
+func Logout(c *gin.Context) {
+
+	session := sessions.Default(c)
+	user := session.Get("user")
+	if user == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
+		return
+	}
+	session.Delete("user")
+	if err := session.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, "/")
+}
+
+// Login handles user login and sets a session
+func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
 	// Authenticate user
-	token, err := models.LoginCheck(username, password)
+	err := models.LoginCheck(username, password)
 
 	if err != nil {
 		// Authentication failed, return an error response
@@ -128,10 +116,8 @@ func LoginWithSession(c *gin.Context) {
 
 	// Set a session variable
 	session := sessions.Default(c)
-	session.Set("token", token)
 	session.Set("user", username)
 	session.Save()
 
-	redirectURL := "/dashboard/profile"
-    c.Redirect(http.StatusSeeOther, redirectURL)
+	c.Redirect(http.StatusSeeOther, "/")
 }

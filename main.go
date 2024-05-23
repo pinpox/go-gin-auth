@@ -1,12 +1,12 @@
 package main
 
 import (
-	"ginjwtauth/controllers"
-	"ginjwtauth/middlewares"
-	"ginjwtauth/models"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"go-gin-auth/controllers"
+	"go-gin-auth/middlewares"
+	"go-gin-auth/models"
 )
 
 func main() {
@@ -19,45 +19,43 @@ func main() {
 	// Load templates
 	r.LoadHTMLGlob("views/*")
 
-	// Set up session middleware
-	store := cookie.NewStore([]byte("secret")) // TODO
+	// Global middlewares
+
+	// Sessions
+	store := cookie.NewStore([]byte("secret2"))   // TODO
 	r.Use(sessions.Sessions("mysession", store)) //TODO
+
+	// Log to gin.DefaultWriter even if you set with GIN_MODE=release.
+	// By default gin.DefaultWriter = os.Stdout
+	r.Use(gin.Logger())
+
+	// Recovers panics, writes a 500 if there was one.
+	r.Use(gin.Recovery())
 
 	// Set up FlashMessageMiddleware
 	r.Use(middlewares.FlashMessageMiddleware())
 
-	// Group routes
-	api := r.Group("/api")
-	{
-		auth := api.Group("/auth")
-		{
-			// Register and login routes
-			auth.POST("/register", controllers.Register)
-			auth.POST("/login", controllers.Login)
-		}
-
-		// Profile route with JWT authentication middleware
-		api.GET("/profile", middlewares.JwtAuthMiddleware(), controllers.Profile)
-		api.GET("/user", middlewares.JwtAuthMiddleware(), controllers.Profile)
-		api.POST("/user", middlewares.JwtAuthMiddleware(), controllers.UpdateProfile)
-	}
-
-	dashboard := r.Group("/dashboard")
-	dashboard.Use(middlewares.AuthMiddleware())
-	dashboard.GET("/profile", controllers.ProfileIndex)
-
-	web := r.Group("/web")
-	{
-		web.Use(middlewares.AuthMiddleware())
-		web.POST("/user", controllers.UpdateProfile)
-	}
-
-	// Login and register pages
+	// Login, Logout and register
 	r.GET("/login", controllers.LoginIndex)
 	r.GET("/register", controllers.RegisterIndex)
+	r.GET("/logout", controllers.Logout)
+	r.POST("/login", controllers.Login)
+	r.POST("/register", controllers.Register)
 
-	// New login route that sets a session
-	r.POST("/api/loginWithSession", controllers.LoginWithSession)
+	// Authorized group
+	authorized := r.Group("/")
+	authorized.Use(middlewares.AuthMiddleware())
+	authorized.GET("/user", controllers.ProfileIndex)
+	authorized.POST("/user", controllers.ProfileUpdate)
+
+	{
+		note := authorized.Group("/note")
+        note.GET("/", controllers.NoteList)
+        note.POST("/create", controllers.NoteCreate)
+		note.GET("/:id", controllers.NoteShow)
+		note.PUT("/:id", controllers.NoteUpdate)
+		note.DELETE("/:id", controllers.NoteDelete)
+	}
 
 	// Run the server
 	r.Run(":8000")
