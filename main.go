@@ -1,16 +1,45 @@
 package main
 
 import (
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
+	"log"
+	"os"
+
 	"go-gin-auth/controllers"
 	"go-gin-auth/middlewares"
 	"go-gin-auth/models"
-	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/joho/godotenv"
 )
 
+func loadEnv() {
+
+	required := []string{
+		"SESSION_SECRET",
+		"ADMIN_USERNAME",
+		"ADMIN_PASSWORD",
+		"ADMIN_NAME",
+		"ADMIN_EMAIL",
+		"LISTEN_ADDRESS",
+	}
+
+	if err := godotenv.Load(".env"); err != nil {
+		log.Println("No .env file provided, checking environment")
+	}
+
+	for _, v := range required {
+		if len(os.Getenv(v)) == 0 {
+			log.Fatalf("FATAL: Environment var: %s is not set\n", v)
+		}
+	}
+}
+
 func main() {
+
+	loadEnv()
+
 	// Initialize the Gin router
 	r := gin.Default()
 
@@ -31,13 +60,14 @@ func main() {
 	}
 
 	// Load templates
+	// TODO use embed
 	r.LoadHTMLGlob("views/*")
 
 	// Global middlewares
 
 	// Sessions
-	store := cookie.NewStore([]byte("secret2"))  // TODO
-	r.Use(sessions.Sessions("mysession", store)) //TODO
+	store := cookie.NewStore([]byte(os.Getenv("SESSION_SECRET")))
+	r.Use(sessions.Sessions("session", store))
 
 	// Log to gin.DefaultWriter even if you set with GIN_MODE=release.
 	// By default gin.DefaultWriter = os.Stdout
@@ -74,5 +104,5 @@ func main() {
 	}
 
 	// Run the server
-	r.Run(":8000")
+	r.Run(os.Getenv("LISTEN_ADDRESS"))
 }

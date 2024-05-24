@@ -1,9 +1,6 @@
 package models
 
 import (
-	"log"
-
-	"github.com/joho/godotenv"
 	"gorm.io/driver/sqlite" // Sqlite driver based on CGO
 	"gorm.io/gorm"
 )
@@ -13,10 +10,9 @@ var DB *gorm.DB
 // ConnectDataBase connects to the database using environment variables
 func ConnectDataBase() {
 	// Load environment variables from .env file
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
+
+	var err error
+
 
 	// Connect to the database
 
