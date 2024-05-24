@@ -1,7 +1,12 @@
-## Go + Gin + Htmx
+# Go + Gin + Htmx
 
-Demo application with authentication
+Minimal viable demo CRUD application with authentication
 
+## SBOM
+
+- [Gin Web Framework](https://gin-gonic.com/)
+- [htmx](https://htmx.org/)
+- [Matcha CSS](https://matcha.mizu.sh/)
 
 ## Dev
 
