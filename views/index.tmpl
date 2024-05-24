@@ -12,7 +12,9 @@
 
 	<body hx-ext="head-support" >
 
-		{{ with .Flash }} {{ range . }} <div class="flash default">{{.}}</div> {{ end }} {{ end }}
+		{{ with .FlashError }} {{ range . }} <div class="flash danger">{{.}}</div> {{ end }} {{ end }}
+		{{ with .FlashInfo }} {{ range . }} <div class="flash default">{{.}}</div> {{ end }} {{ end }}
+		{{ with .FlashSuccess }} {{ range . }} <div class="flash success">{{.}}</div> {{ end }} {{ end }}
 
 		{{if not .user}}
 		<div hx-trigger="load" hx-get="/login" hx-swap="outerHTML" ></div>

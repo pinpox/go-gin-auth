@@ -1,4 +1,3 @@
-// controllers/AuthController.go
 package controllers
 
 import (
@@ -6,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go-gin-auth/models"
 	"go-gin-auth/utils"
+	"log"
 	"net/http"
 )
 
@@ -27,7 +27,9 @@ func Register(c *gin.Context) {
 
 	// Bind and validate input
 	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Println(err)
+		utils.FlashSuccess(c, "Invalid registration data provided")
+		c.Redirect(http.StatusBadRequest, "/")
 		return
 	}
 
@@ -42,13 +44,13 @@ func Register(c *gin.Context) {
 	// Save the user to the database
 	_, err := user.SaveUser()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Println(err)
+		utils.FlashSuccess(c, "Failed to save user")
+		c.Redirect(http.StatusBadRequest, "/")
 		return
 	}
 
-	flashMessage := c.MustGet("setFlashMessage").(func(string))
-	flashMessage("User registered successfully")
-
+	utils.FlashSuccess(c, "User registered successfully")
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
@@ -57,29 +59,7 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// Profile handles user profile
-func Profile(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
-
-	// Retrieve user from the database
-	user, err := models.GetUserByID(userID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
-	}
-
-	// Return user details
-	c.JSON(http.StatusOK, gin.H{
-		"username": user.Username,
-		"name":     user.Name,
-		"email":    user.Email,
-	})
-}
-
-// Login Index Page
-func LoginIndex(c *gin.Context) {
-	utils.RenderTemplate(c, "login-form", gin.H{"title": "Login"})
-}
+func LoginIndex(c *gin.Context) { utils.RenderTemplate(c, "login-form", gin.H{"title": "Login"}) }
 
 // Logout handles user login and sets a session
 func Logout(c *gin.Context) {
@@ -87,18 +67,18 @@ func Logout(c *gin.Context) {
 	session := sessions.Default(c)
 	user := session.Get("user")
 	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session token"})
+		log.Println("No user to log out, invalid session token")
 		return
 	}
 	session.Delete("user")
 	if err := session.Save(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
+		log.Println(err)
+		utils.FlashSuccess(c, "Logout failed")
+		c.Redirect(http.StatusInternalServerError, "/")
 		return
 	}
 
-	flashMessage := c.MustGet("setFlashMessage").(func(string))
-	flashMessage("Logged out successfully")
-
+	utils.FlashInfo(c, "Logged out successfully")
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
@@ -111,8 +91,8 @@ func Login(c *gin.Context) {
 	err := models.LoginCheck(username, password)
 
 	if err != nil {
-		// Authentication failed, return an error response
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		utils.FlashError(c, "Invalid username or password")
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 

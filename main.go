@@ -46,9 +46,6 @@ func main() {
 	// Recovers panics, writes a 500 if there was one.
 	r.Use(gin.Recovery())
 
-	// Set up FlashMessageMiddleware
-	r.Use(middlewares.FlashMessageMiddleware())
-
 	// Login, Logout and register
 	r.GET("/", controllers.Index)
 

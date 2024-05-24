@@ -19,11 +19,10 @@ type ProfileInput struct {
 func ProfileIndex(c *gin.Context) {
 
 	user, err := GetCurrentUser(c)
-	flashMessage := c.MustGet("setFlashMessage").(func(string))
 
 	if err != nil {
 		log.Println(err)
-		flashMessage("User not found!")
+		utils.FlashError(c, "User not found!")
 		c.Redirect(http.StatusForbidden, "/user")
 		return
 	}
@@ -37,12 +36,11 @@ func ProfileIndex(c *gin.Context) {
 // ProfileUpdate updates the user profile based on the provided input
 func ProfileUpdate(c *gin.Context) {
 
-	flashMessage := c.MustGet("setFlashMessage").(func(string))
 
 	currentUser, err := GetCurrentUser(c)
 	if err != nil {
 		log.Println(err)
-		flashMessage("Failed to update user!")
+		utils.FlashError(c, "Failed to update user!")
 		c.Redirect(http.StatusForbidden, "/user")
 		c.Abort()
 		return
@@ -52,7 +50,7 @@ func ProfileUpdate(c *gin.Context) {
 
 	if err := c.ShouldBind(&input); err != nil {
 		log.Println(err)
-		flashMessage("Failed to update user!")
+		utils.FlashError(c, "Failed to update user!")
 		c.Redirect(http.StatusBadRequest, "/user")
 		c.Abort()
 		return
@@ -62,7 +60,7 @@ func ProfileUpdate(c *gin.Context) {
 
 	if err != nil {
 		log.Println(err)
-		flashMessage("Failed to update user!")
+		utils.FlashError(c, "Failed to update user!")
 		c.Redirect(http.StatusBadRequest, "/user")
 		c.Abort()
 		return
@@ -75,12 +73,12 @@ func ProfileUpdate(c *gin.Context) {
 
 	if saveErr != nil {
 		log.Println(saveErr)
-		flashMessage("Failed to update user!")
+		utils.FlashError(c, "Failed to update user!")
 		c.Redirect(http.StatusBadRequest, "/user")
 		c.Abort()
 		return
 	} else {
-		flashMessage("Profile updated successfully")
+		utils.FlashError(c, "Profile updated successfully")
 		utils.RenderTemplate(c, "profile-form", gin.H{"Name": u.Name, "Email": u.Email})
 	}
 }

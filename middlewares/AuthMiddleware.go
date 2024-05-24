@@ -21,7 +21,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if user == nil {
 			log.Println("No user found in AuthMiddleware, redirecting to login")
 			// Redirect to the login page if not authenticated
-			c.Redirect(http.StatusSeeOther, "/login")
+			c.Redirect(http.StatusSeeOther, "/")
 			c.Abort() // Stop the execution of subsequent middleware and the handler
 			return
 		}
