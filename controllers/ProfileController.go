@@ -23,7 +23,7 @@ func ProfileIndex(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		utils.FlashError(c, "User not found!")
-		c.Redirect(http.StatusForbidden, "/user")
+		c.Redirect(http.StatusSeeOther, "/user")
 		return
 	}
 
@@ -41,7 +41,7 @@ func ProfileUpdate(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusForbidden, "/user")
+		c.Redirect(http.StatusSeeOther, "/user")
 		c.Abort()
 		return
 	}
@@ -51,7 +51,7 @@ func ProfileUpdate(c *gin.Context) {
 	if err := c.ShouldBind(&input); err != nil {
 		log.Println(err)
 		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusBadRequest, "/user")
+		c.Redirect(http.StatusSeeOther, "/user")
 		c.Abort()
 		return
 	}
@@ -61,7 +61,7 @@ func ProfileUpdate(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusBadRequest, "/user")
+		c.Redirect(http.StatusSeeOther, "/user")
 		c.Abort()
 		return
 	}
@@ -74,7 +74,7 @@ func ProfileUpdate(c *gin.Context) {
 	if saveErr != nil {
 		log.Println(saveErr)
 		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusBadRequest, "/user")
+		c.Redirect(http.StatusSeeOther, "/user")
 		c.Abort()
 		return
 	} else {

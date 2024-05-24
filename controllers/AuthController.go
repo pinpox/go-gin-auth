@@ -29,7 +29,7 @@ func Register(c *gin.Context) {
 	if err := c.ShouldBind(&input); err != nil {
 		log.Println(err)
 		utils.FlashSuccess(c, "Invalid registration data provided")
-		c.Redirect(http.StatusBadRequest, "/")
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
@@ -46,7 +46,7 @@ func Register(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		utils.FlashSuccess(c, "Failed to save user")
-		c.Redirect(http.StatusBadRequest, "/")
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
@@ -74,7 +74,7 @@ func Logout(c *gin.Context) {
 	if err := session.Save(); err != nil {
 		log.Println(err)
 		utils.FlashSuccess(c, "Logout failed")
-		c.Redirect(http.StatusInternalServerError, "/")
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
