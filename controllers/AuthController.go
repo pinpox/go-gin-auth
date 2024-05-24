@@ -11,9 +11,7 @@ import (
 
 // RegisterIndex displays the registration form
 func RegisterIndex(c *gin.Context) {
-	utils.RenderTemplate(c, "register.tmpl", gin.H{
-		"title": "Register",
-	})
+	utils.RenderTemplate(c, "register-form", gin.H{ })
 }
 
 type RegisterInput struct {
@@ -75,11 +73,10 @@ func Profile(c *gin.Context) {
 	})
 }
 
+
 // Login Index Page
 func LoginIndex(c *gin.Context) {
-	utils.RenderTemplate(c, "login.tmpl", gin.H{
-		"title": "Login",
-	})
+	utils.RenderTemplate(c, "login-form", gin.H{ "title": "Login" })
 }
 
 // Logout handles user login and sets a session

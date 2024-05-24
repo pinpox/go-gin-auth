@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"log"
 	// "html"
 	// "strings"
 
@@ -15,19 +16,37 @@ type Note struct {
 	User   User
 	UserID int
 
-	Title  string `gorm:"size:255;not null;" json:"title"`
-	Text   string `gorm:"size:255;not null;" json:"text"`
+	Title string `gorm:"size:255;not null;" json:"title"`
+	Text  string `gorm:"size:255;not null;" json:"text"`
+}
+
+func GetNotesByUser(uid uint) ([]Note, error) {
+	var n []Note
+
+	if err := DB.Where("user_id = ?", uid).Find(&n).Error; err != nil {
+		return n, errors.New("Notes not found!")
+	}
+
+	return n, nil
 }
 
 // GetNoteByID retrieves a user by ID from the database
-func GetNoteByID(uid uint) (Note, error) {
+func GetNoteByID(id uint) (Note, error) {
 	var n Note
 
-	if err := DB.First(&n, uid).Error; err != nil {
+	if err := DB.First(&n, id).Error; err != nil {
 		return n, errors.New("Note not found!")
 	}
 
 	return n, nil
+}
+
+// SaveNote creates a new user in the database
+func (n *Note) UpdateNote() (error) {
+
+	log.Println("UPDATING", n)
+
+	return DB.Save(&n).Error
 }
 
 // SaveNote creates a new user in the database

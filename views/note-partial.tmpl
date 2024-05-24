@@ -1,0 +1,12 @@
+<form action="/note/{{.ID}}" enctype="application/x-www-form-urlencoded">
+
+	<label for="title">Title:</label>
+	<input type="text" id="title" name="title" value="{{.Title}}" required><br>
+
+	<label for="text">Text:</label>
+	<input type="text" id="text" name="text" value="{{.Text}}" required><br>
+
+	<button hx-delete="/note/{{.ID}}" hx-target="closest form" hx-swap="outerHTML">Delete</button>
+	<button hx-put="/note/{{.ID}}" hx-target="closest form" hx-swap="outerHTML">Update</button>
+
+</form>

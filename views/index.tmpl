@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>{{.Title}}</title>
+		<link rel="stylesheet" href="https://matcha.mizu.sh/matcha.css">
+		<script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+		<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/head-support.js"></script>
+	</head>
+
+	<body hx-ext="head-support" >
+
+		{{if not .user}}
+		<div hx-trigger="load" hx-get="/login" hx-swap="outerHTML" ></div>
+		{{else}}
+		<div hx-trigger="load" hx-get="/note" hx-swap="outerHTML" ></div>
+		{{end}}
+
+	</body>
+</html>
+
+{{define "register-form"}}
+
+<head><title>Register</title></head>
+
+<div id="authform">
+
+	<form action="/register" method="POST">
+		<label for="username">Username:</label>
+		<input type="text" id="username" name="username" required><br>
+
+		<label for="name">Name:</label>
+		<input type="text" id="name" name="name" required><br>
+
+		<label for="email">Email:</label>
+		<input type="text" id="email" name="email" required><br>
+
+		<label for="password">Password:</label>
+		<input type="password" id="password" name="password" required><br>
+
+		<button type="submit">Register</button>
+	</form>
+
+	<p>Already have an account? <a href="/login" hx-target="#authform" hx-get="/login">Login here</a></p>
+
+</div>
+{{end}}
+
+{{define "login-form"}}
+
+<head><title>Login</title></head>
+<div id="authform">
+	<form action="/login" method="POST">
+		<label for="username">Username:</label>
+		<input type="text" id="username" name="username" required><br>
+
+		<label for="password">Password:</label>
+		<input type="password" id="password" name="password" required><br>
+
+		<button type="submit">Login</button>
+	</form>
+
+	<p>Don't have an account? <a href="/register" hx-target="#authform" hx-get="/register">Register here</a></p>
+</div>
+{{end}}

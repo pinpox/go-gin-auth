@@ -50,6 +50,8 @@ func main() {
 	r.Use(middlewares.FlashMessageMiddleware())
 
 	// Login, Logout and register
+	r.GET("/", controllers.Index)
+
 	r.GET("/login", controllers.LoginIndex)
 	r.GET("/register", controllers.RegisterIndex)
 	r.GET("/logout", controllers.Logout)
