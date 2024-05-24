@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 )
 
@@ -16,6 +17,13 @@ func FlashSuccess(c *gin.Context, message string) {
 
 func FlashError(c *gin.Context, message string) {
 	flash(c, message, "error")
+}
+
+func ErrorRedirect(c *gin.Context, err error, message string, target string) {
+	log.Println(err)
+	FlashError(c, message)
+	// c.Abort()
+	c.Redirect(http.StatusSeeOther, target)
 }
 
 func flash(c *gin.Context, message, flashtype string) {

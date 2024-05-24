@@ -27,9 +27,7 @@ func Register(c *gin.Context) {
 
 	// Bind and validate input
 	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err)
-		utils.FlashSuccess(c, "Invalid registration data provided")
-		c.Redirect(http.StatusSeeOther, "/")
+		utils.ErrorRedirect(c, err, "Invalid registration data provided", "/")
 		return
 	}
 
@@ -44,9 +42,7 @@ func Register(c *gin.Context) {
 	// Save the user to the database
 	_, err := user.SaveUser()
 	if err != nil {
-		log.Println(err)
-		utils.FlashSuccess(c, "Failed to save user")
-		c.Redirect(http.StatusSeeOther, "/")
+		utils.ErrorRedirect(c, err, "Failed to save user", "/")
 		return
 	}
 
@@ -72,9 +68,7 @@ func Logout(c *gin.Context) {
 	}
 	session.Delete("user")
 	if err := session.Save(); err != nil {
-		log.Println(err)
-		utils.FlashSuccess(c, "Logout failed")
-		c.Redirect(http.StatusSeeOther, "/")
+		utils.ErrorRedirect(c, err, "Logout failed", "/")
 		return
 	}
 
@@ -91,8 +85,7 @@ func Login(c *gin.Context) {
 	err := models.LoginCheck(username, password)
 
 	if err != nil {
-		utils.FlashError(c, "Invalid username or password")
-		c.Redirect(http.StatusSeeOther, "/")
+		utils.ErrorRedirect(c, err, "Invalid username or password", "/")
 		return
 	}
 

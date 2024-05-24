@@ -11,24 +11,19 @@ import (
 
 func NoteList(c *gin.Context) {
 
-	session := sessions.Default(c)
-	username := session.Get("user").(string)
-
-	user, err := models.GetUserByUsername(username)
+	user, err := GetCurrentUser(c)
 	if err != nil {
-		//TODO replace with log + flash + redirect
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		utils.ErrorRedirect(c, err, "No user found", "/")
 		return
 	}
 
 	notes, err := models.GetNotesByUser(user.ID)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get notes"})
+		utils.ErrorRedirect(c, err, "Failed to get notes", "/")
 		return
 	}
 
-	// c.JSON(http.StatusFound, gin.H{"notes": notes})
 	utils.RenderTemplate(c, "note-list.tmpl", gin.H{"notes": notes})
 
 }
@@ -37,14 +32,13 @@ func NoteShow(c *gin.Context) {}
 // PUT
 func NoteUpdate(c *gin.Context) {
 
-	log.Println("updating note now")
-
 	var input NoteInput
 
 	// Bind and validate input
 	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/")
+		c.Abort()
 		return
 	}
 
@@ -53,26 +47,21 @@ func NoteUpdate(c *gin.Context) {
 
 	user, err := models.GetUserByUsername(username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		utils.ErrorRedirect(c, err, "User not found", "/")
 		return
 	}
 
-
-
 	n, err := models.GetNoteByID(1)
 	if err != nil || n.UserID != int(user.ID) {
-		log.Println(err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Editing note not possible"})
-		c.Abort()
+		utils.ErrorRedirect(c, err, "Failed to update note", "/")
 		return
 	}
 
 	n.Text = input.Text
 	n.Title = input.Title
 
-
 	if err = n.UpdateNote(); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorRedirect(c, err, "Failed to update note", "/")
 		return
 	}
 
@@ -107,7 +96,8 @@ func NoteCreate(c *gin.Context) {
 
 	// Bind and validate input
 	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
@@ -116,7 +106,8 @@ func NoteCreate(c *gin.Context) {
 
 	user, err := models.GetUserByUsername(username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
@@ -130,7 +121,7 @@ func NoteCreate(c *gin.Context) {
 	// Save the user to the database
 	_, err = note.SaveNote()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorRedirect(c, err, "Failed to save note", "/")
 		return
 	}
 

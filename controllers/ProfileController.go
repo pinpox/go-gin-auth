@@ -5,8 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go-gin-auth/models"
 	"go-gin-auth/utils"
-	"log"
-	"net/http"
 )
 
 // ProfileInput represents the input for the profile update endpoint
@@ -21,9 +19,7 @@ func ProfileIndex(c *gin.Context) {
 	user, err := GetCurrentUser(c)
 
 	if err != nil {
-		log.Println(err)
-		utils.FlashError(c, "User not found!")
-		c.Redirect(http.StatusSeeOther, "/user")
+		utils.ErrorRedirect(c, err, "User not found", "/")
 		return
 	}
 
@@ -36,33 +32,23 @@ func ProfileIndex(c *gin.Context) {
 // ProfileUpdate updates the user profile based on the provided input
 func ProfileUpdate(c *gin.Context) {
 
-
 	currentUser, err := GetCurrentUser(c)
 	if err != nil {
-		log.Println(err)
-		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusSeeOther, "/user")
-		c.Abort()
+		utils.ErrorRedirect(c, err, "Failed to update user", "/user")
 		return
 	}
 
 	var input ProfileInput
 
 	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err)
-		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusSeeOther, "/user")
-		c.Abort()
+		utils.ErrorRedirect(c, err, "Failed to update user", "/user")
 		return
 	}
 
 	u, err := models.GetUserByID(currentUser.ID)
 
 	if err != nil {
-		log.Println(err)
-		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusSeeOther, "/user")
-		c.Abort()
+		utils.ErrorRedirect(c, err, "Failed to update user", "/user")
 		return
 	}
 
@@ -72,13 +58,11 @@ func ProfileUpdate(c *gin.Context) {
 	_, saveErr := u.UpdateUser()
 
 	if saveErr != nil {
-		log.Println(saveErr)
-		utils.FlashError(c, "Failed to update user!")
-		c.Redirect(http.StatusSeeOther, "/user")
-		c.Abort()
+		utils.ErrorRedirect(c, err, "Failed to update user", "/user")
 		return
+
 	} else {
-		utils.FlashError(c, "Profile updated successfully")
+		utils.FlashSuccess(c, "Profile updated successfully")
 		utils.RenderTemplate(c, "profile-form", gin.H{"Name": u.Name, "Email": u.Email})
 	}
 }
