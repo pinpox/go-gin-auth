@@ -12,9 +12,16 @@
 
 	<body hx-ext="head-support" >
 
+		{{ with .Flash }} {{ range . }} <div class="flash default">{{.}}</div> {{ end }} {{ end }}
+
 		{{if not .user}}
 		<div hx-trigger="load" hx-get="/login" hx-swap="outerHTML" ></div>
 		{{else}}
+		<menu>
+			<li class="selected">Notes</li>
+			<li><a href="/user">Profile</a></li>
+			<li><a href="/logout">Logout</a></li>
+		</menu>
 		<div hx-trigger="load" hx-get="/note" hx-swap="outerHTML" ></div>
 		{{end}}
 
@@ -22,11 +29,9 @@
 </html>
 
 {{define "register-form"}}
-
 <head><title>Register</title></head>
 
 <div id="authform">
-
 	<form action="/register" method="POST">
 		<label for="username">Username:</label>
 		<input type="text" id="username" name="username" required><br>
@@ -42,15 +47,13 @@
 
 		<button type="submit">Register</button>
 	</form>
-
 	<p>Already have an account? <a href="/login" hx-target="#authform" hx-get="/login">Login here</a></p>
-
 </div>
 {{end}}
 
 {{define "login-form"}}
-
 <head><title>Login</title></head>
+
 <div id="authform">
 	<form action="/login" method="POST">
 		<label for="username">Username:</label>
@@ -61,7 +64,6 @@
 
 		<button type="submit">Login</button>
 	</form>
-
 	<p>Don't have an account? <a href="/register" hx-target="#authform" hx-get="/register">Register here</a></p>
 </div>
 {{end}}

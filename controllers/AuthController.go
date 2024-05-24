@@ -2,16 +2,16 @@
 package controllers
 
 import (
-	"go-gin-auth/models"
-	"go-gin-auth/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go-gin-auth/models"
+	"go-gin-auth/utils"
 	"net/http"
 )
 
 // RegisterIndex displays the registration form
 func RegisterIndex(c *gin.Context) {
-	utils.RenderTemplate(c, "register-form", gin.H{ })
+	utils.RenderTemplate(c, "register-form", gin.H{})
 }
 
 type RegisterInput struct {
@@ -46,7 +46,10 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+	flashMessage := c.MustGet("setFlashMessage").(func(string))
+	flashMessage("User registered successfully")
+
+	c.Redirect(http.StatusSeeOther, "/")
 }
 
 type LoginInput struct {
@@ -73,10 +76,9 @@ func Profile(c *gin.Context) {
 	})
 }
 
-
 // Login Index Page
 func LoginIndex(c *gin.Context) {
-	utils.RenderTemplate(c, "login-form", gin.H{ "title": "Login" })
+	utils.RenderTemplate(c, "login-form", gin.H{"title": "Login"})
 }
 
 // Logout handles user login and sets a session
@@ -93,6 +95,9 @@ func Logout(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
 		return
 	}
+
+	flashMessage := c.MustGet("setFlashMessage").(func(string))
+	flashMessage("Logged out successfully")
 
 	c.Redirect(http.StatusSeeOther, "/")
 }

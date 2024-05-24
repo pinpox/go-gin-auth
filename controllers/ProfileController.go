@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"go-gin-auth/models"
-	"go-gin-auth/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go-gin-auth/models"
+	"go-gin-auth/utils"
+	"log"
 	"net/http"
-	"strings"
 )
 
 // ProfileInput represents the input for the profile update endpoint
@@ -17,12 +17,14 @@ type ProfileInput struct {
 
 // Profile displays the user's profile
 func ProfileIndex(c *gin.Context) {
-	session := sessions.Default(c)
-	username := session.Get("user").(string)
 
-	user, err := models.GetUserByUsername(username)
+	user, err := GetCurrentUser(c)
+	flashMessage := c.MustGet("setFlashMessage").(func(string))
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		log.Println(err)
+		flashMessage("User not found!")
+		c.Redirect(http.StatusForbidden, "/user")
 		return
 	}
 
@@ -34,37 +36,35 @@ func ProfileIndex(c *gin.Context) {
 
 // ProfileUpdate updates the user profile based on the provided input
 func ProfileUpdate(c *gin.Context) {
-	var (
-		userID uint
-		err    error
-	)
 
-	session := sessions.Default(c)
-	username := session.Get("user")
+	flashMessage := c.MustGet("setFlashMessage").(func(string))
 
-	// Retrieve user
-	if username != nil {
-		user, err := models.GetUserByUsername(username.(string))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
-			return
-		}
-
-		userID = user.ID
+	currentUser, err := GetCurrentUser(c)
+	if err != nil {
+		log.Println(err)
+		flashMessage("Failed to update user!")
+		c.Redirect(http.StatusForbidden, "/user")
+		c.Abort()
+		return
 	}
 
 	var input ProfileInput
 
-	// Use ShouldBind with Form instead of ShouldBindQuery
 	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Println(err)
+		flashMessage("Failed to update user!")
+		c.Redirect(http.StatusBadRequest, "/user")
+		c.Abort()
 		return
 	}
 
-	u, err := models.GetUserByID(userID)
+	u, err := models.GetUserByID(currentUser.ID)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error3": err.Error()})
+		log.Println(err)
+		flashMessage("Failed to update user!")
+		c.Redirect(http.StatusBadRequest, "/user")
+		c.Abort()
 		return
 	}
 
@@ -74,20 +74,29 @@ func ProfileUpdate(c *gin.Context) {
 	_, saveErr := u.UpdateUser()
 
 	if saveErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error4": saveErr.Error()})
+		log.Println(saveErr)
+		flashMessage("Failed to update user!")
+		c.Redirect(http.StatusBadRequest, "/user")
+		c.Abort()
 		return
-	}
-
-	// Check if the request is from the web (HTML form)
-	if strings.Contains(c.Request.URL.Path, "/web/") {
-		// Redirect to a different page
-		flashMessage := c.MustGet("setFlashMessage").(func(string))
-		flashMessage("Profile updated successfully")
-
-		redirectURL := "/dashboard/profile"
-		c.Redirect(http.StatusSeeOther, redirectURL)
 	} else {
-		// Respond with JSON for API requests
-		c.JSON(http.StatusOK, gin.H{"message": "Profile updated successfully"})
+		flashMessage("Profile updated successfully")
+		utils.RenderTemplate(c, "profile-form", gin.H{"Name": u.Name, "Email": u.Email})
+	}
+}
+
+// GetCurrentUser retrieves the current user of a context
+func GetCurrentUser(c *gin.Context) (models.User, error) {
+
+	var user models.User
+	var err error
+
+	session := sessions.Default(c)
+	username := session.Get("user")
+
+	if username != nil {
+		return models.GetUserByUsername(username.(string))
+	} else {
+		return user, err
 	}
 }
