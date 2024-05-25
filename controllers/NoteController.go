@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go-gin-auth/models"
 	"go-gin-auth/utils"
@@ -42,12 +41,9 @@ func NoteUpdate(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	username := session.Get("user").(string)
-
-	user, err := models.GetUserByUsername(username)
+	user, err := GetCurrentUser(c)
 	if err != nil {
-		utils.ErrorRedirect(c, err, "User not found", "/")
+		utils.ErrorRedirect(c, err, "No user found", "/")
 		return
 	}
 
@@ -101,13 +97,9 @@ func NoteCreate(c *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(c)
-	username := session.Get("user").(string)
-
-	user, err := models.GetUserByUsername(username)
+	user, err := GetCurrentUser(c)
 	if err != nil {
-		log.Println(err)
-		c.Redirect(http.StatusSeeOther, "/")
+		utils.ErrorRedirect(c, err, "No user found", "/")
 		return
 	}
 

@@ -30,7 +30,6 @@ func flash(c *gin.Context, message, flashtype string) {
 	session := sessions.Default(c)
 	session.AddFlash(message, flashtype)
 	session.Save()
-
 }
 
 // RenderTemplate is a custom function to render a template with flash messages
